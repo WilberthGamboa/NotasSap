@@ -1,3 +1,2 @@
 # SE80
-
-Te mu
+SE80 es la transacción en SAP conocida como el Workbench ABAP o Entorno de Desarrollo ABAP. Es una de las herramientas más importantes para los desarrolladores ABAP, ya que permite acceder a una amplia gama de funcionalidades necesarias para el desarrollo y mantenimiento de aplicaciones en SAP.
