@@ -1,0 +1,11 @@
+# ACCEDER POSTMAN SAP (PAGINA 173)
+/n/IWFND/GW_CLIENT
+
+
+# SAP GATEWAY URL
+
+sap/opu/odata/ZTEST_ODATA
+
+/sap/opu/odata/SAP/ZTEST_ODATA_SRV/?$format=xml
+
+
