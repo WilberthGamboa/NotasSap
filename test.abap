@@ -23,17 +23,14 @@ METHOD reprocesoset_get_entityset.
     ENDIF.
   ENDLOOP.
 
-  DATA: lt_data  TYPE TABLE OF mast,     " Tabla interna para almacenar resultados del primer JOIN
-        lt_final TYPE TABLE OF caufv,    " Tabla interna para almacenar resultados finales
-              " Estructura para el primer JOIN
-        ls_final TYPE caufv.   " Estructura para el segundo JOIN
+  DATA:  lt_data TYPE TABLE OF caufv.   
 
-  SELECT t1~stlnr, t2~matnr
+  SELECT t1~stlnr, t2~PLNBEZ,t2~AUFNR
   FROM stpo AS t1
-  INNER JOIN mast AS t2 ON t1~stlnr = t2~stlnr
-  WHERE t1~IDNRK = @ls_selparamproductid-low " <-- Aquí se agregó el símbolo @
+  INNER JOIN caufv AS t2 ON t1~stlnr = t2~stlnr
+  WHERE t1~IDNRK = @ls_selparamproductid-low 
   INTO CORRESPONDING FIELDS OF TABLE @lt_data.
 
   " Asumiendo que ls_employee tiene la misma estructura que lt_data
-  et_entityset = VALUE #( FOR ls_data IN lt_data ( idnrk0  = ls_data-stlnr idnrk1 = ls_data-matnr ) ).
+  et_entityset = VALUE #( FOR ls_data IN lt_data ( stlnr  = ls_data-stlnr PLNBEZ = ls_data-PLNBEZ AUFNR = ls_data-AUFNR ) ).
 ENDMETHOD.
