@@ -6,11 +6,13 @@ METHOD reprocesoset_get_entityset.
         lt_selparamproductid     TYPE STANDARD TABLE OF bapi_epm_product_id_range,
         ls_selparamproductid     TYPE bapi_epm_product_id_range.
 
+  " Obtener los filtros de la entidad
   lr_filter = io_tech_request_context->get_filter( ).
   lt_filter_select_options = lr_filter->get_filter_select_options( ).
 
-  DATA:  ls_employee LIKE LINE OF et_entityset.
+  DATA: ls_employee LIKE LINE OF et_entityset.
 
+  " Procesar los filtros para obtener el rango de materiales
   LOOP AT lt_filter_select_options INTO ls_filter_select_options.
     IF ls_filter_select_options-property EQ 'IDNRK0'.
       LOOP AT ls_filter_select_options-select_options INTO ls_select_option.
@@ -23,14 +25,39 @@ METHOD reprocesoset_get_entityset.
     ENDIF.
   ENDLOOP.
 
-  DATA:  lt_data TYPE TABLE OF caufv.   
+  " Tabla para almacenar los datos combinados
+  DATA: lt_data TYPE TABLE OF caufv,
+        lt_final TYPE TABLE OF resb,  " Para almacenar los resultados finales incluyendo RESB
+        ls_data  TYPE caufv,
+        ls_final TYPE resb.
 
-  SELECT t1~stlnr, t2~PLNBEZ,t2~AUFNR
-  FROM stpo AS t1
-  INNER JOIN caufv AS t2 ON t1~stlnr = t2~stlnr
-  WHERE t1~IDNRK = @ls_selparamproductid-low 
-  INTO CORRESPONDING FIELDS OF TABLE @lt_data.
+  " Primer JOIN entre STPO y CAUFV
+  SELECT t1~stlnr, t2~PLNBEZ, t2~AUFNR, t2~KTEXT
+    FROM stpo AS t1
+    INNER JOIN caufv AS t2 ON t1~stlnr = t2~stlnr
+    WHERE t1~IDNRK = @ls_selparamproductid-low
+    INTO CORRESPONDING FIELDS OF TABLE @lt_data.
 
-  " Asumiendo que ls_employee tiene la misma estructura que lt_data
-  et_entityset = VALUE #( FOR ls_data IN lt_data ( stlnr  = ls_data-stlnr PLNBEZ = ls_data-PLNBEZ AUFNR = ls_data-AUFNR ) ).
+  " Segundo JOIN con la tabla RESB para obtener las cantidades de material y otros datos
+  LOOP AT lt_data INTO ls_data.
+    SELECT r~aufnr, r~matnr, r~bdmng, r~meins, r~charg  " Campos adicionales: BDMNG, MEINS, CHARG
+      FROM resb AS r
+      WHERE r~aufnr = @ls_data-aufnr AND r~matnr = ls_selparamproductid-low  " Filtrar por el número de orden de producción
+      INTO CORRESPONDING FIELDS OF TABLE @lt_final.
+  ENDLOOP.
+
+  " Mapear los datos al entityset para la salida final, incluyendo campos adicionales de RESB
+  et_entityset = VALUE #(
+    FOR ls1_data IN lt_data
+    FOR ls1_final IN lt_final WHERE ( aufnr = ls_data-aufnr )  " Combinar datos en base a AUFNR
+    ( stlnr  = ls1_data-stlnr
+      PLNBEZ = ls1_data-PLNBEZ
+      AUFNR  = ls1_data-AUFNR
+      KTEXT  = ls1_data-KTEXT
+
+      BDMNG  = ls1_final-bdmng  " Cantidad de material requerida
+      MEINS  = ls1_final-meins  " Unidad de medida del material
+      CHARG  = ls1_final-charg  " Lote del material
+    )
+  ).
 ENDMETHOD.
