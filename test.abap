@@ -16,7 +16,7 @@ METHOD reprocesoset_get_entityset.
 
   " Procesar los filtros para obtener el rango de materiales
   LOOP AT lt_filter_select_options INTO ls_filter_select_options.
-    IF ls_filter_select_options-property EQ 'IDNRK0'.
+    IF ls_filter_select_options-property EQ 'IDNRK'.
       LOOP AT ls_filter_select_options-select_options INTO ls_select_option.
         ls_selparamproductid-sign = ls_select_option-sign.
         ls_selparamproductid-option = ls_select_option-option.
@@ -70,7 +70,7 @@ METHOD reprocesoset_get_entityset.
       BDMNG  = ls1_final-bdmng  " Cantidad de material requerida
       MEINS  = ls1_final-meins  " Unidad de medida del material
       CHARG  = ls1_final-charg  " Lote del material
-      DATS =   ls_selparamfecha-low
+     
     )
   ).
 ENDMETHOD.
