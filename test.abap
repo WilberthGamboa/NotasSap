@@ -4,7 +4,9 @@ METHOD reprocesoset_get_entityset.
         ls_filter_select_options TYPE /iwbep/s_mgw_select_option,
         ls_select_option         TYPE /iwbep/s_cod_select_option,
         lt_selparamproductid     TYPE STANDARD TABLE OF bapi_epm_product_id_range,
-        ls_selparamproductid     TYPE bapi_epm_product_id_range.
+        lt_selparamfecha          TYPE STANDARD TABLE OF bapi_epm_product_id_range,
+        ls_selparamproductid     TYPE bapi_epm_product_id_range,
+        ls_selparamfecha    TYPE bapi_epm_product_id_range.
 
   " Obtener los filtros de la entidad
   lr_filter = io_tech_request_context->get_filter( ).
@@ -21,6 +23,16 @@ METHOD reprocesoset_get_entityset.
         ls_selparamproductid-low = ls_select_option-low.
         ls_selparamproductid-high = ls_select_option-high.
         APPEND ls_selparamproductid TO lt_selparamproductid.
+      ENDLOOP.
+    
+
+    ELSEIF ls_filter_select_options-property EQ 'DATS'.
+      LOOP AT ls_filter_select_options-select_options INTO ls_select_option.
+        ls_selparamfecha-sign = ls_select_option-sign.
+        ls_selparamfecha-option = ls_select_option-option.
+        ls_selparamfecha-low = ls_select_option-low.
+        ls_selparamfecha-high = ls_select_option-high.
+        APPEND ls_selparamfecha TO lt_selparamfecha.
       ENDLOOP.
     ENDIF.
   ENDLOOP.
@@ -42,7 +54,7 @@ METHOD reprocesoset_get_entityset.
   LOOP AT lt_data INTO ls_data.
     SELECT r~aufnr, r~matnr, r~bdmng, r~meins, r~charg  " Campos adicionales: BDMNG, MEINS, CHARG
       FROM resb AS r
-      WHERE r~aufnr = @ls_data-aufnr AND r~matnr = ls_selparamproductid-low  " Filtrar por el número de orden de producción
+      WHERE r~aufnr = @ls_data-aufnr AND r~matnr = @ls_selparamproductid-low  " Filtrar por el número de orden de producción
       INTO CORRESPONDING FIELDS OF TABLE @lt_final.
   ENDLOOP.
 
@@ -58,6 +70,7 @@ METHOD reprocesoset_get_entityset.
       BDMNG  = ls1_final-bdmng  " Cantidad de material requerida
       MEINS  = ls1_final-meins  " Unidad de medida del material
       CHARG  = ls1_final-charg  " Lote del material
+      DATS =   ls_selparamfecha-low
     )
   ).
 ENDMETHOD.
