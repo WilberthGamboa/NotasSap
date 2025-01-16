@@ -28,7 +28,7 @@ METHOD reprocesoset_get_entityset.
       ENDLOOP.
 
 
-    ELSEIF ls_filter_select_options-property EQ 'DATS'.
+    ELSEIF ls_filter_select_options-property EQ 'ERDAT'.
       LOOP AT ls_filter_select_options-select_options INTO ls_select_option.
         ls_selparamfecha-sign = ls_select_option-sign.
         ls_selparamfecha-option = ls_select_option-option.
